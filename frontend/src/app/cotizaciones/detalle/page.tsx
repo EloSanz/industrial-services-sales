@@ -25,7 +25,7 @@ function QuotationDetailContent() {
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
-  
+
   // Selection of active version being viewed
   const [activeVersionNumber, setActiveVersionNumber] = useState<number>(1);
   const [activeVersion, setActiveVersion] = useState<QuotationVersion | null>(null);
@@ -34,7 +34,7 @@ function QuotationDetailContent() {
   const [isReCotizando, setIsReCotizando] = useState(false);
   const [editItems, setEditItems] = useState<QuotedItem[]>([]);
   const [editNotes, setEditNotes] = useState("");
-  
+
   // Product search helper inside Re-cotizar
   const [searchTerm, setSearchTerm] = useState("");
   const [qty, setQty] = useState(1);
@@ -67,7 +67,7 @@ function QuotationDetailContent() {
       setActiveVersionNumber(foundQuote.version);
       const latestVer = foundQuote.versions.find(v => v.version === foundQuote.version) || foundQuote.versions[foundQuote.versions.length - 1];
       setActiveVersion(latestVer);
-      
+
       // Seed editor
       setEditItems(latestVer ? [...latestVer.items] : []);
       setEditNotes(latestVer ? latestVer.notes : "");
@@ -141,7 +141,7 @@ function QuotationDetailContent() {
 
   const handleAddItemToEdit = () => {
     if (!selectedProduct) return;
-    
+
     let discount = 0;
     if (client) {
       if (client.id === "cli-1" && selectedProduct.category === "Válvulas") {
@@ -238,9 +238,10 @@ function QuotationDetailContent() {
     setIsConverting(true);
     setConversionStep("credit");
     setConversionLogs(["Iniciando validación de la cotización #" + quotation.id + "...", "Paso 1: Validación del estado crediticio del cliente..."]);
-    
+
     setTimeout(() => {
       // Step 1: Credit check
+      let isOk = false;
       if (client) {
         const availableCredit = client.creditLimit - client.balance;
         const totalAmount = activeVersion.total;
@@ -248,18 +249,30 @@ function QuotationDetailContent() {
         if (client.creditLimit === 0) {
           setConversionLogs(prev => [...prev, "ℹ️ Cliente opera de contado. Crédito no requerido.", "✅ Validación de pago aprobada (Contado/Anticipado)."]);
           setCreditPassed(true);
+          isOk = true;
         } else if (totalAmount > availableCredit) {
           setConversionLogs(prev => [...prev, `❌ Límite excedido! Monto total (${formatCurrency(totalAmount)}) supera el saldo disponible (${formatCurrency(availableCredit)}).`, "⚠️ Requiere autorización forzada por administración para continuar..."]);
           setCreditPassed(false);
+          isOk = false;
         } else {
           setConversionLogs(prev => [...prev, `✅ Crédito aprobado. Saldo disponible actual: ${formatCurrency(availableCredit)}. Monto pedido: ${formatCurrency(totalAmount)}.`]);
           setCreditPassed(true);
+          isOk = true;
         }
       } else {
         setConversionLogs(prev => [...prev, "✅ Cliente ocasional (Mostrador). Operación al contado aprobada."]);
         setCreditPassed(true);
+        isOk = true;
       }
-      setConversionStep("stock");
+
+      if (isOk) {
+        setConversionStep("stock");
+        setTimeout(() => {
+          proceedToStockValidation(false);
+        }, 1500);
+      } else {
+        setConversionStep("credit");
+      }
     }, 1500);
   };
 
@@ -302,7 +315,7 @@ function QuotationDetailContent() {
       } else {
         setConversionLogs(prev => [...prev, "⚠️ Advertencia de stock: Faltan insumos en depósito. Se requiere solicitar compras o traslado externo."]);
       }
-      
+
       setConversionStep("done");
     }, 2000);
   };
@@ -326,7 +339,7 @@ function QuotationDetailContent() {
       if (prod) {
         const centralStock = prod.stockByDeposit["Central"] || 0;
         const newCentralStock = Math.max(0, centralStock - item.quantity);
-        
+
         // Update stock in localStorage database
         updateProductStock(item.productId, {
           ...prod.stockByDeposit,
@@ -422,7 +435,7 @@ function QuotationDetailContent() {
       {/* Main layout */}
       {!isReCotizando ? (
         <div className="grid-3" style={{ alignItems: "start" }}>
-          
+
           {/* Col 1 & 2: Version selector & Items Table */}
           <div className="card" style={{ gridColumn: "span 2" }}>
             <div className="card-title-bar">
@@ -699,7 +712,7 @@ function QuotationDetailContent() {
                 onChange={(e) => setEditNotes(e.target.value)}
               />
             </div>
-            
+
             <div style={{ backgroundColor: "rgba(15, 23, 42, 0.4)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", padding: "20px", display: "flex", flexDirection: "column", gap: "10px", justifyContent: "center" }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem" }}>
                 <span>Subtotal (Edición):</span>
@@ -742,11 +755,28 @@ function QuotationDetailContent() {
           justifyContent: "center",
           backdropFilter: "none"
         }}>
-          <div className="card" style={{ maxWidth: "600px", width: "90%", padding: "30px", maxHeight: "85vh", overflowY: "auto" }}>
-            <h3 style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--primary)", borderBottom: "1px solid var(--border-color)", paddingBottom: "12px" }}>
-              <span>⚙️</span> Asistente de Preparación de Pedido
-            </h3>
-            
+          <div className="card" style={{ maxWidth: "600px", width: "90%", padding: "30px", maxHeight: "85vh", overflowY: "auto", position: "relative" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-color)", paddingBottom: "12px", marginBottom: "12px" }}>
+              <h3 style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--primary)", margin: 0 }}>
+                <span>⚙️</span> Asistente de Preparación de Pedido
+              </h3>
+              <button
+                onClick={() => setIsConverting(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--text-secondary)",
+                  fontSize: "1.5rem",
+                  cursor: "pointer",
+                  lineHeight: 1,
+                  padding: "4px 8px"
+                }}
+                title="Cerrar"
+              >
+                &times;
+              </button>
+            </div>
+
             <div style={{
               backgroundColor: "#090d16",
               fontFamily: "monospace",
@@ -773,20 +803,21 @@ function QuotationDetailContent() {
 
             {/* Steps interactive buttons */}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "24px" }}>
+              {conversionStep !== "done" && (
+                <button onClick={() => setIsConverting(false)} className="btn btn-secondary">
+                  Cancelar
+                </button>
+              )}
+
               {conversionStep === "credit" && !creditPassed && (
-                <>
-                  <button onClick={() => setIsConverting(false)} className="btn btn-secondary">
-                    Cancelar
-                  </button>
-                  <button onClick={() => proceedToStockValidation(true)} className="btn btn-primary" style={{ backgroundColor: "var(--danger)" }}>
-                    🔑 Forzar Autorización de Crédito
-                  </button>
-                </>
+                <button onClick={() => proceedToStockValidation(true)} className="btn btn-primary" style={{ backgroundColor: "var(--danger)" }}>
+                  🔑 Forzar Autorización de Crédito
+                </button>
               )}
 
               {conversionStep === "stock" && (
-                <button onClick={() => proceedToStockValidation(false)} className="btn btn-primary" style={{ display: "none" }}>
-                  Continuar
+                <button onClick={() => proceedToStockValidation(false)} className="btn btn-primary">
+                  Continuar con Validación de Stock
                 </button>
               )}
 
