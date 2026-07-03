@@ -320,7 +320,7 @@ function QuoteWizardContent() {
     }
 
     alert("¡Cotización guardada con éxito!");
-    router.push(`/cotizaciones/${newQuote.id}`);
+    router.push(`/cotizaciones/detalle?id=${newQuote.id}`);
   };
 
   // Generate WhatsApp message copy

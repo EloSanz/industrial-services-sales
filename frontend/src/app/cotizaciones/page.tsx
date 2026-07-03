@@ -165,7 +165,7 @@ export default function QuotationsList() {
                   return (
                     <tr key={quote.id}>
                       <td style={{ fontWeight: "700" }}>
-                        <Link href={`/cotizaciones/${quote.id}`} style={{ color: "var(--primary)" }}>
+                        <Link href={`/cotizaciones/detalle?id=${quote.id}`} style={{ color: "var(--primary)" }}>
                           #{quote.id}
                         </Link>
                       </td>
@@ -198,7 +198,7 @@ export default function QuotationsList() {
                         </span>
                       </td>
                       <td>
-                        <Link href={`/cotizaciones/${quote.id}`} className="btn btn-secondary" style={{ padding: "6px 12px", fontSize: "0.75rem" }}>
+                        <Link href={`/cotizaciones/detalle?id=${quote.id}`} className="btn btn-secondary" style={{ padding: "6px 12px", fontSize: "0.75rem" }}>
                           Administrar
                         </Link>
                       </td>

@@ -300,7 +300,7 @@ export default function Dashboard() {
                         return (
                           <tr key={quote.id}>
                             <td>
-                              <Link href={`/cotizaciones/${quote.id}`} style={{ color: "var(--primary)", fontWeight: "600" }}>
+                              <Link href={`/cotizaciones/detalle?id=${quote.id}`} style={{ color: "var(--primary)", fontWeight: "600" }}>
                                 #{quote.id}
                               </Link>
                             </td>
@@ -328,7 +328,7 @@ export default function Dashboard() {
                                   💬 Copiar WA
                                 </button>
                                 <Link
-                                  href={`/cotizaciones/${quote.id}`}
+                                  href={`/cotizaciones/detalle?id=${quote.id}`}
                                   className="btn btn-outline"
                                   style={{ padding: "6px 12px", fontSize: "0.75rem" }}
                                 >
@@ -368,7 +368,7 @@ export default function Dashboard() {
                     return (
                       <tr key={quote.id}>
                         <td>
-                          <Link href={`/cotizaciones/${quote.id}`} style={{ color: "var(--primary)", fontWeight: "600" }}>
+                          <Link href={`/cotizaciones/detalle?id=${quote.id}`} style={{ color: "var(--primary)", fontWeight: "600" }}>
                             #{quote.id}
                           </Link>
                         </td>
@@ -392,7 +392,7 @@ export default function Dashboard() {
                           </span>
                         </td>
                         <td>
-                          <Link href={`/cotizaciones/${quote.id}`} className="btn btn-secondary" style={{ padding: "6px 12px", fontSize: "0.75rem" }}>
+                          <Link href={`/cotizaciones/detalle?id=${quote.id}`} className="btn btn-secondary" style={{ padding: "6px 12px", fontSize: "0.75rem" }}>
                             Ver Detalle
                           </Link>
                         </td>

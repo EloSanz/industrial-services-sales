@@ -1,8 +1,8 @@
 "use client";
 
-import React, { use, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   getQuotations,
   getProducts,
@@ -17,8 +17,9 @@ import {
   QuotedItem
 } from "@/lib/mockData";
 
-export default function QuotationDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+function QuotationDetailContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id") || "";
   const router = useRouter();
 
   const [quotation, setQuotation] = useState<Quotation | null>(null);
@@ -810,5 +811,13 @@ export default function QuotationDetailPage({ params }: { params: Promise<{ id: 
         </div>
       )}
     </div>
+  );
+}
+
+export default function QuotationDetailPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: "40px", textAlign: "center" }}>Cargando detalle...</div>}>
+      <QuotationDetailContent />
+    </Suspense>
   );
 }
